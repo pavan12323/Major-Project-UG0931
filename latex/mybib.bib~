@@ -1,0 +1,12 @@
+@article{openflow,
+    author    = "Nick McKeown, Tom Anderson, Hari Balakrishnan, Guru Parulkar, Larry Peterson, Jennifer
+Rexford, Scott Shenker, Jonathan Turner",
+    title     = "OpenFlow: Enabling Innovation in Campus Networks",
+    journal   = "",
+    %volume   = "",
+    %number   = "",
+    %pages    = "",
+    year      = "XXXX",
+    %month    = "",
+    %note     = "",
+}

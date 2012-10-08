@@ -1,0 +1,471 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{makeidx}
+\usepackage[top=1.5cm, bottom=1.5cm, left=2cm, right=2cm]{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{setspace}
+\usepackage{cite}
+\usepackage{listings}
+\onehalfspacing
+
+\usepackage[T1]{fontenc}
+\begin{document}
+
+\tableofcontents
+\newpage
+\listoffigures
+
+\newpage
+
+
+\section{Introduction}
+As IP networks are becoming larger and more complex, the operators of these networks
+gain more and more interest in traffic engineering. Traffic engineering encompasses
+performance evaluation and performance optimisation of operational IP networks. An
+important goal with traffic engineering is to use the available network resources more
+efficiently for different types of load patterns in order to provide a better and more reliable
+service to customers.
+
+
+Current routing protocols in the Internet calculate the shortest path to a destination in
+some metric without knowing anything about the traffic demand, link reliability etc.
+Multipath routing aims to exploit the resources of the underlying physical network by
+providing multiple paths between source-destination pairs. Multipath routing has a potential
+to aggregate bandwidth on various paths, allowing a network to support data transfer rates
+higher than what is possible with any one path.
+
+\subsection{OpenFlow}
+OpenFlow \cite{openflow} is an open switching protocol that is based on the concept of Software Defined
+Networks (SDN). The typical architecture of a generic switch comprises of a control panel
+and a forwarding plane. The control plane is where the decision to forward a set of packets
+along a certain port is taken while the forwarding plane does the forwarding of data based on
+the above decision. Traditionally, switches combine both the planes in the same device and
+this leads to non-scalable and closed switching solution. OpenFlow divides the control and
+forwarding plane into separate entities and running them on separate devices. A network
+administrator can partition traffic into production and research flows. In this way, researchers
+can try new protocols, security models etc.
+An OpenFlow Switch consists at least three parts:
+
+\begin{enumerate}
+
+
+
+
+\item A Flow Table: tells the switch how to process the flow.
+\item A Secure Channel: connects switch and remote controller.
+\item The OpenFlow Protocol: provides standards for controller
+to communicate with a switch.
+\end{enumerate}
+\begin{figure}[H]
+\begin{center}
+
+
+\includegraphics[width=100mm]{openflow.png}
+\end{center}
+\caption{Dedicated OpenFlow Switch}
+\end{figure}
+
+
+\subsection{Floodlight}
+\begin{figure}[H]
+\begin{center}
+
+\includegraphics[width=100mm]{floodlight.png}
+\end{center}
+\caption{Architecture of Floodlight Controller}
+\end{figure}
+
+The Floodlight controller \cite{floodlight} is an enterprise-class, Apache-licensed, Java-based OpenFlow
+Controller supported by community of developers.
+
+\begin{itemize}
+
+\item It offers a module system that helps developers to extend and enhance.
+\item It supports a broad range of virtual and physical OpenFlow switches
+\item It is easy to build and setup with minimal dependencies.
+\item It is designed to be high performance
+\end{itemize}
+
+
+\subsection{Multipath Routing}
+Most routing protocol in current use such as RIP, EIGP and OSPF make very
+inefficient use of bandwidth usage. Multipath routing \cite{multipath} is an answer for those defects. Two
+factors to be considered for efficient routing graph construction are loop freedom and
+connectivity\cite{dummy}.
+ 
+
+
+
+\newpage
+\section{Literature Survey}
+
+\subsection{Equal Cost Multipath routing}
+
+Equal-cost multi-path (ECMP)\cite{ecmp} is a routing technique for routing
+   packets along multiple paths of equal cost.  The forwarding engine
+   identifies paths by next-hop.  When forwarding a packet the router
+   must decide which next-hop (path) to use. 
+
+
+\subsection{Mininet}
+Mininet\cite{mininet} creates scalable software defined networks on a single PC by using Linux
+processes in network namespaces. It allows quickly creating, interacting with,
+customizing and a share software defined prototype, and provides a smooth path to
+migrating onto physical hardware.
+
+\begin{itemize}
+\item provides a simple and inexpensive network testbed for developing OpenFlow applications
+\item enables multiple concurrent developers to work independently on the same topology
+\item supports system-level regression tests, which are repeatable and easily packaged
+\item enables complex topology testing, without the need to wire up a physical network
+\item includes a CLI that is topology-aware and OpenFlow-aware, for debugging or running network-wide tests
+\item supports arbitrary custom topologies, and includes a basic set of parametrized topologies
+\item is usable out of the box without programming
+\item also provides a straightforward and extensible Python API for network creation and experimentation
+\end{itemize}
+
+\subsubsection*{How it Works}
+Nearly every operating system virtualizes computing resources using a process abstraction. Mininet uses process-based virtualization to run many (we've successfully booted up to 4096) hosts and switches on a single OS kernel. Since version 2.2.26, Linux has supported network namespaces, a lightweight virtualization feature that provides individual processes with separate network interfaces, routing tables, and ARP tables. The full Linux container architecture adds chroot() jails, process and user namespaces, and CPU and memory limits to provide full OS-level virtualization, but Mininet does not require these additional features. Mininet can create kernel or user-space OpenFlow switches, controllers to control the switches, and hosts to communicate over the simulated network. Mininet connects switches and hosts using virtual ethernet (veth) pairs. While Mininet currently depends on the Linux kernel, in the future it may support other operating systems with process-based virtualization, such Solaris containers or FreeBSD jails.
+
+
+Mininet's code is almost entirely Python, except for a short C utility.
+
+
+\subsection{Floodlight - Openflow Controller}
+It\cite{modules} offers a module system that makes it simple to extend and enhance. Descriptions of modules are given below:
+
+\subsubsection{DeviceManagerImpl}
+
+DeviceManagerImpl tracks devices as they move around a network and defines the destination device for a new flow.
+
+The Device Manager learns about devices through PacketIn requests. It takes information from the PacketIn and classifies the device according to how the entity classifier is setup. By default the entity classifier uses MAC address and VLAN to identify a device. These two properties will define what is unique as a device. The Device Manager will learn about other properties such as IP addresses as well. One important piece of information is the device attachment points. If a PacketIn is received on a switch an attachment point will be created for that device. A device can have as many as one attachment point per OpenFlow island, where an island is defined as a strongly connected set of OpenFlow switches talking to the same Floodlight controller. The Device Manager will also age out attachment points, IPs, and devices themselves. Last seen timestamps are used to keep control of the aging process.
+
+\subsubsection{FloodlightProvider}
+The FloodlightProvider provides two main pieces of functionality. It handles the connections to switches and turns OpenFlow messages into events that other modules can listen for. The second big function that it provides is decides the order in which specific OpenFlow messages (i.e. PacketIn, FlowRemoved, PortStatus, etc) are dispatched to the modules that listen for the messages. Modules can then decide to allow the processing of the message to go onto the next listener or to stop processing the message.
+
+\subsubsection{Forwarding}
+Forwarding will forward packets between two devices. The source and destination devices will be classified by the IDeviceService.
+
+
+Since Floodlight is designed to work in networks that contain both OpenFlow and non-OpenFlow switches Forwarding has to take this into account. The algorithm will find all OpenFlow islands that have device attachment points for both the source and destination devices. FlowMods will then be installed along the shortest path for the flow. If a PacketIn is received is received on an island and there is no attachment point for the device on that island the packet will be flooded.
+
+
+\subsubsection{LinkDiscoveryManager}
+The link discovery service is responsible for discovering and maintaining the status of links in the OpenFlow network.
+
+
+The link discovery services uses both LLDPs and broadcast packets (aka BDDPs) to detect links. The LLDP destination MAC is 01:80:c2:00:00:0e and the is ff:ff:ff:ff:ff:ff (broadcast address). The ether type for both LLDPs and BDDPs is LLDP (0x88cc). There are two assumptions made in order for the topology to be learned properly.
+
+\begin{itemize}
+
+
+\item Any switch (including OpenFlow switches) will consume a link-local packet (LLDP).
+\item Honors layer 2 broadcasts.
+\end{itemize}
+Links can either be "direct" or "broadcast". A direct link will be established if an LLDP is sent out one port and the same LLDP is received on another port. This implies that the ports are directly connected. A broadcast link is created if a BDDP is sent out a port and received on another. This implies that there is another layer 2 switch not under the control of the controller between these two ports.
+
+
+\subsubsection{MemoryStorageSource}
+The MemoryStorageSource is an in memory NoSQL style storage source. Notifications for changes in the database are also supported.
+
+Other Floodlight modules that depend upon the IStorageSourceService interface can create/delete/modify data in the memory storage source. All data is shared and there is no enforcement. Modules can also register for changes to data in specific tables and rows. Any module that wants to do this should implement the IStorageSourceListener interface.
+
+\subsubsection{TopologyService}
+The Topology Service computes topologies based on link information it learns from the ILinkDiscoveryService. An important concept that the TopologyService keeps is the idea of an OpenFlow 'island'. An island is defined as a group of strongly connected OpenFlow switches under the same instance of Floodlight. Islands can be interconnected using non-OpenFlow switches on the same layer 2 domain. 
+
+
+
+All the information about the current topology is stored in an immutable data structure called the topology instance. If there is any change in the topology, a new instance is created and the topology changed notification message is called. If other modules want to listen for changes in topology they can implement the ITopologyListener interface.
+
+
+
+
+\newpage
+
+
+\section{Problem Definition and Objectives}
+
+\subsection{Problem Definition}
+Currently the Floodlight Controller uses Shortest First Path algorithm to forward the
+packets which uses network resources inefficiently.Multipath routing can be effectively used for maximum utilization of network resources. It gives
+the node a choice of next hops for the same destination.
+
+\subsection{Objectives}
+The objective of this project is to add a module to the Floodlight Controller which does forwarding with efficient multipath routing algorithm.
+
+Tasks:
+\begin{enumerate}
+\item Understand OpenFlow/SDN architecture.
+\item Get to know about the tools (Mininet, Wireshark and Floodlight Controller) required for implementing the project.
+\item Analysing the existing multipath routing protocols and coming up with optimized multipath routing algorithm for Floodlight controller.
+
+\item Integrating the above algorithm to Floodlight controller and doing performance evaluation.
+
+
+\end{enumerate}
+\newpage
+
+
+
+\section{Work-done}
+
+\subsection{Simulating OpenFlow network}
+\subsubsection{Installation}
+\begin{enumerate}
+\item Mininet VM image - Download from  \url{https://github.com/downloads/mininet/mininet/mininet-vm-ubuntu11.10-052312.vmware.zip}
+
+\item Download and install virtualization system, VMware Player for linux. 
+
+\item Download Floodlight Controller from Floodlight Github.
+
+
+\end{enumerate}
+
+\subsubsection{OpenFlow network without controller}
+\begin{enumerate}
+\item Run Mininet VM in VMware Player and login to VM.
+
+\item SSH into VM - ssh -X openflow@openflow [ mininet VM local ip address ] 
+
+\begin{figure}[H]
+\begin{center}
+
+\includegraphics[width=170mm]{login.png}
+\end{center}
+\caption{SSH into Mininet VM}
+\end{figure}
+
+\textbf{Short Descriptions}
+\begin{itemize}
+
+\item \textbf{OpenFlow Controller:} sits above the OpenFlow interface. The OpenFlow reference distribution includes a controller that acts as an Ethernet learning switch in combination with an OpenFlow switch.
+\item  \textbf{ OpenFlow Switch:} sits below the OpenFlow interface. The OpenFlow reference distribution includes a user-space software switch. Open vSwitch is another software but kernel-based switch, while there is a number of hardware switches available from Broadcom (Stanford Indigo release), HP, NEC, and others.
+\item \textbf{ dpctl:} command-line utility that sends quick OpenFlow messages, useful for viewing switch port and flow stats, plus manually inserting flow entries.
+\item \textbf{ Wireshark:} general (non-OF-specific) graphical utility for viewing packets. The OpenFlow reference distribution includes a Wireshark dissector, which parses OpenFlow messages sent to the OpenFlow default port (6633) in a conveniently readable way.
+\item \textbf{ iperf:} general command-line utility for testing the speed of a single TCP connection.
+\item \textbf{ cbench: } utility for testing the flow setup rate of OpenFlow controllers.
+\end{itemize}
+
+\item Start a sample network. Figure given below depicts the topology.
+\begin{figure}[H]
+\begin{center}
+
+\includegraphics[width=100mm]{sample.png}
+\end{center}
+\caption{Sample OpenFlow topology}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
+
+\includegraphics[width=170mm]{walk.png}
+\end{center}
+\caption{Sample OpenFlow topology - simulation}
+\end{figure}
+
+\item Initially the ping from h2 to h3 or h3 to h4 fails, because the switch is not connected to controller and  doesn't know where to send the incoming packets/traffic.
+\item Manually add the flow entries with the help of dpctl commands.
+
+
+
+\begin{figure}[H]
+\begin{center}
+
+\includegraphics[width=170mm]{dpctl.png}
+\end{center}
+\caption{Manually adding flow entries}
+\end{figure}
+
+\item Now pinging from h2 to h3 will be SUCCESS!!! as there is a flow entry for that traffic.
+
+\end{enumerate}
+\newpage
+\subsubsection{OpenFlow network with Floodlight controller}
+\begin{enumerate}
+\item Login in to Mininet VM.
+\item Download Floodlight controller and run in the Host machine.
+
+
+\begin{figure}[H]
+\begin{center}
+
+\includegraphics[width=170mm]{run.png}
+\end{center}
+\caption{Running Floodlight controller}
+\end{figure}
+
+
+
+\item Floodlight controller loads all the modules and starts sending LLDP packets on all ports to discover the links.
+
+\begin{figure}[H]
+\begin{center}
+
+\includegraphics[width=170mm]{lldp.png}
+\end{center}
+\caption{Floodlight controller sending LLDP packets}
+\end{figure}
+
+\item Create sample topology and attach remote controller(on port 6633) and ping all hosts.
+\begin{figure}[H]
+\begin{center}
+
+\includegraphics[width=170mm]{pingall.png}
+\end{center}
+\caption{Ping success in sample topology}
+\end{figure}
+
+\item Create custom topology and attach remote controller(on port 6633) and ping all hosts.
+\begin{figure}[H]
+\begin{center}
+
+\includegraphics[width=170mm]{custom.png}
+\end{center}
+\caption{Ping success in custom topology}
+\end{figure}
+
+\end{enumerate}
+\newpage
+
+\subsubsection{Floodlight - Shortest path algorithm}
+
+Currently Floodlight controller (topology aware) uses Shortest path algorithm (Djikstra).
+
+\textbf{Custom topology}\\
+\begin{figure}[H]
+\begin{center}
+
+\includegraphics[width=170mm]{topology3.png}
+\end{center}
+\label{custom}
+\caption{Topology for Shortest path algorithm}
+\end{figure}
+
+\textbf{Steps involved in finding path}
+\begin{itemize}
+\item DeviceManagerImpl module will know the devices registered in the topology.
+\item LinkDiscoveryManager module will know the links/edges between nodes
+\item TopologyManager module will use the Djikstra algorithm and forwards the packets using Forwarding module.
+\end{itemize}
+
+For this topology, when we ping from h1 to h4. The packets will be forwarded from H1--> S5, S5--> S7, S7-->S8, S8--> H4, which is the shortest path.
+
+
+
+
+
+\newpage
+\section{Results and Analysis}
+For this custom topology show in Figure \ref{custom} on page \pageref{custom}, when we ping from h1 to h4. The packets will be forwarded from H1--> S5, S5--> S7, S7-->S8, S8--> H4, which is the shortest path.
+
+This is verified by two methods:
+\begin{enumerate}
+\item Packets caputred by Wireshark
+\begin{figure}[H]
+\begin{center}
+
+\includegraphics[width=170mm]{wireshark.png}
+\end{center}
+\caption{packets captured by wireshark}
+\end{figure}
+
+Except the LLDP packets broadcasted by the controller. These switch shows the flow of additional packets generated by the ping (ICMP).
+\newpage 
+
+\item Flow entries added by the controller on Switches (A,C,D).
+\begin{figure}[H]
+\begin{center}
+
+\includegraphics[width=180mm,height=100mm]{switch.png}
+\end{center}
+\caption{Flow tables added by controller}
+\end{figure}
+\end{enumerate} 
+
+This shows the flow table entries of Switch A, C and D.
+
+\textbf{Switch A:}
+
+The important entries of this Switch flow table are:\\
+
+\textbf{Entry 1}\\
+src= e6:c8:c7:c4:9c:8e\\
+dst= ea:16:5a:59:80:27\\
+input-port=1\\
+action = output:2\\
+
+
+\textbf{Entry 2}\\
+src= ea:16:5a:59:80:27\\
+dst= e6:c8:c7:c4:9c:8e\\
+input-port=2\\
+action = output:1 \\
+
+
+
+Similar entries are added for switch C and switch D
+
+\newpage
+\section{Conclusion and Futurework}
+From our simulations, the working of the Mininet simulator and Floodlight Controller was clearly understood.The role of each module in control decision is identified.
+
+To forward a incoming packets the switch needs to have flow entries for that particular source and destination path.If the entry is not present the switch will contact the controller for forwarding packets.We can add the flow entries manually or automatically with the help of controller.
+
+
+It was found and verified that Floodlight controller uses Djikstra's Shortest path algorithm to forward the packets from source to destination in layer 2.Once the shortest path is identified by the controller, it adds necessary flow entries in switches accordingly. With the help of these entries the packets are forwareded from source to destination.
+
+\begin{verbatim}
+
+\end{verbatim}
+In future stages of work, we will be simulating a topology with multipath from source to destination. With the help of load generator we will demonstrate that congestion occurs in network when we use single path (Shortest path algorithm).
+
+We will implement Equal cost multipath routing and demonstrate that we can achieve more performance by distributing the load among different paths.
+
+\newpage
+\begin{thebibliography}{9}
+
+\bibitem{openflow}
+  Nick McKeown, Tom Anderson, Hari Balakrishnan, Guru Parulkar, Larry Peterson, Jennifer
+Rexford, Scott Shenker, Jonathan Turner
+,
+  \emph{OpenFlow: Enabling Innovation in Campus Networks}.ACM SIGCOMM, Volume 38 Issue 2,
+  April,
+  2008.
+  
+\bibitem{floodlight}
+Floodlight Controller,
+\emph{\url {http://floodlight.openflowhub.org/}}
+
+\bibitem{multipath}
+Multipath Routing,
+\emph{\url{https://en.wikipedia.org/wiki/Multipath_routing
+}}
+
+\bibitem{ecmp}
+C Hopps,
+\emph{Analysis of an Equal-Cost Multi-Path Algorithm},
+\url{https://ebook.tools.ietf.org/html/rfc2992},2000
+
+\bibitem{mininet}
+Mininet Documentation,
+\emph{\url{http://yuba.stanford.edu/foswiki/bin/view/OpenFlow/MininetDocumentation}}
+
+\bibitem{modules}
+Floodlight modules,
+\emph{\url{http://www.openflowhub.org/display/floodlightcontroller/Floodlight+Controller+Wiki}}
+
+\bibitem{dummy}
+Jiayue He and Jennifer Rexford,
+\emph{Toward Internet-Wide Multipath Routing
+},Network-IEEE,Vol:22,Issue:2, March-April 2008
+
+
+\end{thebibliography}
+\newpage
+
+\section*{Appendix}
+\appendix
+\section{Custom topology code - Shortest path}
+\lstinputlisting{raw.py}
+\end{document}
