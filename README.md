@@ -1,6 +1,6 @@
 Hello Everyone !!!
 
-This project aims at adding a module which forwards through layer 2 multipath routing algorithm in Openflow controller.
+This project aims at adding a module which forwards packets through switcher using layer 2 multipath routing algorithm in Openflow controller.
 
 The project is expected to complete on April 2013
 
