@@ -4,7 +4,7 @@ import json
 switches = {}
 controllerIP = '10.100.14.71'
 cport = '8080'
-data  = os.popen('curl -s http://10.100.14.71:8080/wm/core/controller/switches/json').read()
+data  = os.popen('curl -s http://'+controllerIP+ ':'+cport+'/wm/core/controller/switches/json').read()
 
 switches = json.loads(data)
 
