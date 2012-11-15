@@ -17,5 +17,8 @@ for i in range(len(hosts)):
 		print 'Host Mac==>', hosts[i]['mac'][0]
 		print 'connected to Switch==>', hosts[i]['attachmentPoint'][0]['switchDPID']
 		print 'to Switch port==>', hosts[i]['attachmentPoint'][0]['port']
+		
+		print hosts[i]['ipv4'][0]
 		print 
+		print
 
