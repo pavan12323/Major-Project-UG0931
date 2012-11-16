@@ -1,5 +1,6 @@
-""" This is a simple application based on REST API 
+""" This is a simple application based on REST API of Floodlight Controller
 @author Basavesh
+@email-id basavesh.logan@gmail.com
 """
 
 
@@ -191,7 +192,7 @@ print 'Multiple Shortest path available are'
 for path in nx.all_shortest_paths(G,source=Source_switch, target=Destination_switch):
 	print 'host-{} ==> '.format(Source),
 	for nodes in path:
-		print 'Switch-{} ==> '.format(switch),
+		print 'Switch-{} ==> '.format(nodes),
 	print 'host-{}'.format(Destination)
 	print
 
@@ -205,24 +206,40 @@ print 'trying to add one dummy flow entry to Source_switch'
 shortest_path = path_matrix[Source_switch][Destination_switch]
 
 for i in range(len(shortest_path)):
-	j = i+1
-	if j == len(shortest_path):
-		break
-	print 'src-{} port-{} ==> dst-{} port-{}'.format(shortest_path[i],topology.links[shortest_path[i]][shortest_path[j]]['src_port'], shortest_path[j], topology.links[shortest_path[i]][shortest_path[j]]['dst_port'])
+	#j = i+1
+	#if j == len(shortest_path):
+	#	break
+	#print 'src-{} port-{} ==> dst-{} port-{}'.format(shortest_path[i],topology.links[shortest_path[i]][shortest_path[j]]['src_port'], shortest_path[j], topology.links[shortest_path[i]][shortest_path[j]]['dst_port'])
 
+	if i == 0:
+		inport = topology.endDevices[Source]['to_port']
+		switch_mac = shortest_path[i]
+		outport = topology.links[shortest_path[i]][shortest_path[i+1]]['src_port']
 
+	elif i == len(shortest_path) - 1:
+		inport = topology.links[shortest_path[i-1]][shortest_path[i]]['dst_port']
+		switch_mac= shortest_path[i]
+		outport = topology.endDevices[Destination]['to_port']
 
+	else:
+		inport = topology.links[shortest_path[i-1]][shortest_path[i]]['dst_port']
+		switch_mac = shortest_path[i]
+		outport = topology.links[shortest_path[i]][shortest_path[i+1]]['src_port']
 
-'''
-#command = "curl -d -s '{}' http://".format(str(flow_entry))+controllerIP+ ":"+cport+"/wm/staticflowentrypusher/json"
-command = "curl -s -d '{\"switch\": \"%s\", \"name\":\"%s\", \"ether-type\":\"%s\", \"cookie\":\"0\", \"priority\":\"32768\", \"ingress-port\":\"%s\",\"active\":\"true\", \"actions\":\"output=%s\",\"src-ip\":\"%s\",\"dst-ip\":\"%s\"}' http://%s/wm/staticflowentrypusher/json" % (Source_switch, "flow-mod-1", "0x806", 1, 2,Source,Destination, "localhost:8080")
-print command
-result  = os.popen(command).read()
-'''
+	print 'switch==>',switch_mac
+	print 'ingress-port ==> ',inport
+	print 'outport ==> ',outport
+	print 'command to push the flow entry '
+	print 'From source to destination'
+	command = "curl -s -d '{\"switch\": \"%s\", \"name\":\"%s\", \"ether-type\":\"%s\", \"cookie\":\"0\", \"priority\":\"32768\", \"ingress-port\":\"%s\",\"active\":\"true\", \"actions\":\"output=%s\",\"src-ip\":\"%s\",\"dst-ip\":\"%s\"}' http://%s/wm/staticflowentrypusher/json" % (switch_mac, "flow-mod-1", "0x806", inport, outport,Source,Destination, "localhost:8080")
+	print command
+	result = os.popen(command).read()
+	print 'From destination to source'
+	command = "curl -s -d '{\"switch\": \"%s\", \"name\":\"%s\", \"ether-type\":\"%s\", \"cookie\":\"0\", \"priority\":\"32768\", \"ingress-port\":\"%s\",\"active\":\"true\", \"actions\":\"output=%s\",\"src-ip\":\"%s\",\"dst-ip\":\"%s\"}' http://%s/wm/staticflowentrypusher/json" % (switch_mac, "flow-mod-1", "0x806", outport, inport,Destination,Source, "localhost:8080")
+	print command
+	result = os.popen(command).read()
+	print
 
+nx.draw(G)
+plt.show()
 
-
-#nx.draw(G)
-#plt.show()
-
-#curl -d '{"switch": "00:00:00:00:00:00:00:01", "name":"flow-mod-1", "cookie":"0", "priority":"32768", "ingress-port":"1","active":"true", "actions":"output=2"}' http://<controller_ip>:8080/wm/staticflowentrypusher/json
